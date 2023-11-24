@@ -1,9 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>Dashboard de monitoramento de gases</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
+    <h1>Dashboard de monitoramento de gases</h1>
+    <p>
+        Esta dashboard mostra os níveis de álcool e metano em um ambiente.
+    </p>
     <div id="gauge-chart"></div>
 
     <script>
@@ -17,43 +22,21 @@
                     var dados = JSON.parse(xhr.responseText);
 
                     // Atualiza o medidor com os novos dados
-                    var h2s = dados.h2s;
-                    var metano = dados.metano;
-                    var temperatura = dados.temperatura;
-                    var vazao = dados.vazao;
+                    var alcool = parseFloat(dados.alcool);
 
+                    // Cria os dados para as gauges
                     var gaugeData = [
                         {
                         domain: { x: [0, 0.4], y: [0, 0.4] },  // Posição e tamanho da primeira gauge
-                        value: h2s,
-                        title: { text: 'H2S' },
-                        type: 'indicator',
-                        mode: 'gauge+number'
-                        },
-                        {
-                        domain: { x: [0.6, 1], y: [0, 0.4] },  // Posição e tamanho da segunda gauge
-                        value: metano,
-                        title: { text: 'Metano' },
-                        type: 'indicator',
-                        mode: 'gauge+number'
-                        },
-                        {
-                        domain: { x: [0, 0.4], y: [0.6, 1] },  // Posição e tamanho da terceira gauge
-                        value: temperatura,
-                        title: { text: 'Temperatura' },
-                        type: 'indicator',
-                        mode: 'gauge+number'
-                        },
-                        {
-                        domain: { x: [0.6, 1], y: [0.6, 1] },  // Posição e tamanho da quarta gauge
-                        value: vazao,
-                        title: { text: 'Vazão' },
+                        value: alcool,
+                        title: { text: 'Álcool' },
                         type: 'indicator',
                         mode: 'gauge+number'
                         }
                     ];
 
-                    var layout = { width: 800, height: 600 };  // Largura e altura total do layout
+                    // Atualiza o layout da dashboard
+                    var layout = { width: 600, height: 400 };
                     Plotly.newPlot('gauge-chart', gaugeData, layout);
                 }
             };
@@ -63,7 +46,7 @@
         // Chama a função inicialmente
         atualizarMedidor();
 
-        // Chama a função a cada 5 segundos
+        // Atualiza os dados a cada 5 segundos
         setInterval(atualizarMedidor, 5000);
     </script>
 </body>

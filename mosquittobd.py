@@ -2,23 +2,17 @@ import paho.mqtt.client as mqtt
 import mysql.connector
 
 # Configurações do broker MQTT
-broker_host = "localhost"
+broker_host = "test.mosquitto.org"
 broker_port = 1883
 
-# Cria um cliente MQTT
-client = mqtt.Client()
-
-# Conecta-se ao broker MQTT
-client.connect(broker_host, broker_port)
-
 # Cria uma conexão com o banco de dados MySQL
-connection = mysql.connector.connect(user='root', password='123321@', host='127.0.0.1',port=3306,database='meu_banco',
-auth_plugin='mysql_native_password')
+connection = mysql.connector.connect(user='root', password='123321@', host='127.0.0.1', port=3306, database='teste',
+                                     auth_plugin='mysql_native_password')
 
 # Cria um cursor para executar comandos SQL
 cursor = connection.cursor()
 
-# Define um callback para ser chamado quando uma mensagem MQTT for recebida
+# Callback chamado quando uma mensagem MQTT é recebida
 def on_message(client, userdata, message):
     # Obtém o valor da mensagem
     value = message.payload.decode()
@@ -26,18 +20,34 @@ def on_message(client, userdata, message):
     # Formata os dados
     values = value.split(",")
 
+    # Tenta converter a substring para float
+    try:
+        alcohol_value = float(values[0])
+    except ValueError:
+        print("Erro ao converter para float:", values[0])
+        return
+
     # Insere os dados no banco de dados
     cursor.execute(f"""
-        INSERT INTO dados (h2s, metano, temperatura, vazao)
-        VALUES ({values[0]}, {values[1]}, {values[2]}, {values[3]})
+        INSERT INTO dados (alcool)
+        VALUES ({alcohol_value})
         """)
     connection.commit()
 
-# Registra o callback
+# Cria o cliente MQTT
+client = mqtt.Client()
+
+# Conecta-se ao broker MQTT
+client.connect(broker_host, broker_port)
+
+# Define o ID do cliente
+client.client_id = "esp32_mqtt_IF23JF"
+
+# Subscreve-se ao tópico
+client.subscribe("topico_sensor_alcool_if23JF")
+
+# Define o callback para mensagens
 client.on_message = on_message
 
-# Subscreve-se a um tópico
-client.subscribe("dados")
-
-# Inicia um loop infinito para receber mensagens
+# Inicia o loop infinito para receber mensagens
 client.loop_forever()
